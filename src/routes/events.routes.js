@@ -4,6 +4,28 @@ const authenticateToken = require("../middlewares/authenticateToken");
 
 const router = express.Router();
 
+const addAttendanceStatusToEvents = async (docs, userUid) => {
+    const events = [];
+
+    for (const doc of docs) {
+        const attendeeDoc = await db
+            .collection("events")
+            .doc(doc.id)
+            .collection("attendees")
+            .doc(userUid)
+            .get();
+
+        events.push({
+            id: doc.id,
+            ...doc.data(),
+            confirmed: attendeeDoc.exists,
+            attendance: attendeeDoc.exists ? attendeeDoc.data() : null,
+        });
+    }
+
+    return events;
+};
+
 router.get("/", authenticateToken, async (req, res) => {
     try {
         const snap = await db
@@ -11,10 +33,7 @@ router.get("/", authenticateToken, async (req, res) => {
             .orderBy("createdAt", "desc")
             .get();
 
-        const events = snap.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
+        const events = await addAttendanceStatusToEvents(snap.docs, req.user.uid);
 
         return res.json(events);
     } catch (error) {
@@ -35,10 +54,7 @@ router.get("/upcoming", authenticateToken, async (req, res) => {
             .orderBy("date", "asc")
             .get();
 
-        const events = snap.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
+        const events = await addAttendanceStatusToEvents(snap.docs, req.user.uid);
 
         return res.json(events);
     } catch (error) {
@@ -59,10 +75,7 @@ router.get("/past", authenticateToken, async (req, res) => {
             .orderBy("date", "desc")
             .get();
 
-        const events = snap.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
+        const events = await addAttendanceStatusToEvents(snap.docs, req.user.uid);
 
         return res.json(events);
     } catch (error) {
@@ -85,22 +98,21 @@ router.get("/search", authenticateToken, async (req, res) => {
 
         const snap = await db.collection("events").get();
 
-        const events = snap.docs
-            .map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }))
-            .filter((event) => {
-                const title = (event.title || "").toLowerCase();
-                const description = (event.description || "").toLowerCase();
-                const location = (event.location || "").toLowerCase();
+        const filteredDocs = snap.docs.filter((doc) => {
+            const event = doc.data();
 
-                return (
-                    title.includes(q) ||
-                    description.includes(q) ||
-                    location.includes(q)
-                );
-            });
+            const title = (event.title || "").toLowerCase();
+            const description = (event.description || "").toLowerCase();
+            const location = (event.location || "").toLowerCase();
+
+            return (
+                title.includes(q) ||
+                description.includes(q) ||
+                location.includes(q)
+            );
+        });
+
+        const events = await addAttendanceStatusToEvents(filteredDocs, req.user.uid);
 
         return res.json(events);
     } catch (error) {
@@ -119,10 +131,7 @@ router.get("/creator/me", authenticateToken, async (req, res) => {
             .orderBy("createdAt", "desc")
             .get();
 
-        const events = snap.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
+        const events = await addAttendanceStatusToEvents(snap.docs, req.user.uid);
 
         return res.json(events);
     } catch (error) {

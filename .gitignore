@@ -1,0 +1,8 @@
+#node_modules
+node_modules/
+
+#envs
+.env
+
+#cosas del id
+.idea

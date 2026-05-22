@@ -15,10 +15,8 @@ Clonar el repositorio actual
 
 ingresar a la carpeta "be" del proyecto y hacer
 
-``` npm i
-```
+``` npm i```
 
 luego para levantarlo hacer
 
-``` npm run dev
-```
+``` npm run dev```

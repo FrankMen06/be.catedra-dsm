@@ -24,13 +24,23 @@ app.get("/", (req, res) => {
 
 app.get("/health/firebase", async (req, res) => {
     try {
-        await db.collection("health").doc("test").set({
+        const collections = await db.listCollections();
+
+        const testData = {
             status: "ok",
+            projectIdFromEnv: process.env.FIREBASE_PROJECT_ID,
+            clientEmailFromEnv: process.env.FIREBASE_CLIENT_EMAIL,
             checkedAt: new Date().toISOString(),
-        });
+        };
+
+        await db.collection("health").doc("test").set(testData);
 
         res.json({
             message: "Firebase conectado correctamente",
+            projectIdFromEnv: process.env.FIREBASE_PROJECT_ID,
+            clientEmailFromEnv: process.env.FIREBASE_CLIENT_EMAIL,
+            collections: collections.map((collection) => collection.id),
+            testData,
         });
     } catch (error) {
         console.error(error);

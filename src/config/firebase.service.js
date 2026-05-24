@@ -13,7 +13,7 @@ function initializeFirebase() {
 
     if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY) {
         throw new Error(
-            "Faltan variables de entorno de Firebase. Revisa FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL y FIREBASE_PRIVATE_KEY."
+            "Faltan variables de entorno de Firebase."
         );
     }
 
@@ -28,9 +28,12 @@ function initializeFirebase() {
 
 initializeFirebase();
 
+// 👇 AGREGA ESTO
+const auth = admin.auth();
 const db = admin.firestore();
 
 module.exports = {
     admin,
+    auth,
     db,
 };

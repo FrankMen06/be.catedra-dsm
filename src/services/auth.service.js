@@ -92,7 +92,9 @@ async function loginUser({ email, password }) {
         error.statusCode = 401;
         throw error;
     }
-
+    console.log("INPUT PASSWORD:", password);
+    console.log("HASH:", userData.passwordHash);
+    console.log("MATCH:", await bcrypt.compare(password, userData.passwordHash));
     const token = generateToken({
         uid: userDoc.id,
         email: userData.email,

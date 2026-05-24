@@ -1,43 +1,34 @@
 const jwt = require("jsonwebtoken");
-const { db } = require("../config/firebase.service");
 
-const authenticateToken = async (req, res, next) => {
+function authenticateToken(req, res, next) {
     try {
         const authHeader = req.headers.authorization;
 
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({
-                message: "Token no proporcionado",
-            });
+        console.log("AUTH HEADER:", authHeader);
+
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
         }
 
         const token = authHeader.split(" ")[1];
 
-        const revokedDoc = await db.collection("revokedTokens").doc(token).get();
-
-        if (revokedDoc.exists) {
-            return res.status(401).json({
-                message: "Sesión expirada o cerrada. Inicia sesión nuevamente.",
-            });
+        if (!token) {
+            return res.status(401).json({ message: "Token mal formado" });
         }
 
-        jwt.verify(token, process.env.JWT_SECRET, (error, user) => {
-            if (error) {
-                return res.status(403).json({
-                    message: "Token inválido o expirado",
-                });
-            }
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            req.user = user;
-            req.token = token;
-            next();
-        });
+        req.user = decoded;
+
+        next();
+
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            message: "Error autenticando token",
+        console.log("JWT ERROR:", error.message);
+
+        return res.status(403).json({
+            message: "Token inválido o expirado"
         });
     }
-};
+}
 
 module.exports = authenticateToken;

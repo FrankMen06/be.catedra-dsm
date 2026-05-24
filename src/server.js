@@ -11,17 +11,26 @@ const commentsRoutes = require("./routes/comments.routes");
 const attendanceRoutes = require("./routes/attendance.routes");
 const adminRoutes = require("./routes/admin.routes");
 
+// ✅ NUEVO: ratings
+const ratingsRoutes = require("./routes/ratings.routes");
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+// ======================
+// RUTA BASE
+// ======================
 app.get("/", (req, res) => {
     res.json({
         message: "API DSM corriendo correctamente",
     });
 });
 
+// ======================
+// HEALTH CHECK FIREBASE
+// ======================
 app.get("/health/firebase", async (req, res) => {
     try {
         const collections = await db.listCollections();
@@ -39,7 +48,7 @@ app.get("/health/firebase", async (req, res) => {
             message: "Firebase conectado correctamente",
             projectIdFromEnv: process.env.FIREBASE_PROJECT_ID,
             clientEmailFromEnv: process.env.FIREBASE_CLIENT_EMAIL,
-            collections: collections.map((collection) => collection.id),
+            collections: collections.map((c) => c.id),
             testData,
         });
     } catch (error) {
@@ -51,6 +60,9 @@ app.get("/health/firebase", async (req, res) => {
     }
 });
 
+// ======================
+// RUTAS PRINCIPALES
+// ======================
 app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 app.use("/events", eventsRoutes);
@@ -58,6 +70,12 @@ app.use("/comments", commentsRoutes);
 app.use("/attendance", attendanceRoutes);
 app.use("/admin", adminRoutes);
 
+// NUEVO: ratings
+app.use("/ratings", ratingsRoutes);
+
+// ======================
+// START SERVER
+// ======================
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {

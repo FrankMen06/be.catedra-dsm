@@ -28,12 +28,10 @@ function initializeFirebase() {
 
 initializeFirebase();
 
-// 👇 AGREGA ESTO
-const auth = admin.auth();
+
 const db = admin.firestore();
 
 module.exports = {
     admin,
-    auth,
     db,
 };
